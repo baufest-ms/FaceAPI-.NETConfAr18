@@ -1,0 +1,113 @@
+﻿body { width: calc(100vw - 34px); }
+
+.string { color: green; }
+.number { color: darkorange; }
+.boolean { color: red; }
+.null { color: magenta; }
+.key { color: blue; }
+
+.imagen {
+    max-width : 100%;
+    max-height : 100%;
+    display: table;
+    margin: auto;
+}
+
+.file { display : none; }
+
+.loadingModal {
+    display:    none;
+    position:   fixed;
+    z-index:    1000;
+    top:        0;
+    left:       0;
+    height:     100%;
+    width:      100%;
+    background: rgba( 255, 255, 255, .8 ) 
+                url('/Content/Images/ajax-loader.gif') 
+                50% 50% 
+                no-repeat;
+    overflow: hidden
+}
+
+.loadingModalReco {
+    display:    none;
+    position:   fixed;
+    z-index:    10000;
+    top:        0;
+    left:       0;
+    height:     100%;
+    width:      100%;
+    background: rgba( 255, 255, 255, .8 ) 
+                url('/Content/Images/ajax-loader.gif') 
+                50% 50% 
+                no-repeat;
+    overflow: hidden
+}
+
+.dropZone {
+    margin: inherit;
+    border-style: dashed;
+    border-radius: 7px;
+    border-width: thin;
+    text-align: center;
+    height: 100px;
+}
+
+div.dropZone label {
+    cursor: pointer;
+    height: inherit;
+    line-height: 100px;                                    
+    -webkit-transition: height 1000ms ease-in-out,line-height 150ms ease-in-out;
+    -moz-transition: height 1000ms ease-in-out,line-height 150ms ease-in-out;
+    -o-transition: height 1000ms ease-in-out, line-height 150ms ease-in-out;
+    transition: height 1000ms ease-in-out, line-height 150ms ease-in-out;
+}
+
+label .checkbox-dropdown {
+    float: right;
+    height: 25px;
+    width: 15%;
+    vertical-align:middle;
+}
+
+.dropdown-item label {
+    width: 180px;
+    margin-bottom: 0;
+}
+
+.dropdown-item {
+    color: #fff;    
+}
+
+.dropdown-item[href] {
+    padding: 4px 12px 4px 12px;
+}
+
+h5.dropdown-header {
+    font-weight: bold;
+    text-align: center;
+    font-size: 15px;
+}
+
+nav .dropdown-menu :hover{
+    color: #fff;
+    background-color: #343a40;
+}
+
+div .listado {
+    width: 850px;
+    display:inline-block;
+    border: 1px solid white;
+    border-radius: 8px;
+}
+
+pre[name=recoTexto] {
+    height: 100% !important;
+    border: 1px solid white;
+    border-radius: 8px;
+    color: black;
+    background-color: #fff;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size:14px;
+}

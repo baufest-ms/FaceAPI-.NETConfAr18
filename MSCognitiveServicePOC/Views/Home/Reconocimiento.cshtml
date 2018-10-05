@@ -1,0 +1,204 @@
+﻿@{
+    ViewBag.Title = "Reconocimiento";
+}
+
+<div class="jumbotron">
+    <div class="text-center">
+        <button type="button" class="btn btn-success btn-lg" data-toggle="modal" data-target="#modalPersona">Crear Persona</button>
+        <button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#modalCara">Agregar Cara</button>
+        <button type="button" class="btn btn-dark btn-lg" data-toggle="modal" data-target="#modalImagenes">Imagenes</button>        
+    </div>
+    <br />
+    <h1>Reconocimiento de Personas</h1>
+    <br />
+    <nav class="nav nav-pills flex-column flex-sm-row navbar-dark bg-dark" role="navigation">
+        <a class="flex-sm-fill text-sm-center nav-link active" data-toggle="tab" href="#url" onclick="tabClickReco();">Desde una URL</a>
+        <a class="flex-sm-fill text-sm-center nav-link" data-toggle="tab" href="#local" onclick="tabClickReco();">Desde un archivo local</a>
+        <a class="flex-sm-fill text-sm-center nav-link" data-toggle="tab" href="#camara" onclick="tabClickReco();">Desde la WebCam</a>
+    </nav>
+    <div class="tab-content" id="content">
+        <div class="tab-pane fade show active" id="url" role="tabpanel">
+            <br />
+            <h5>Ingrese la Url de la imagen a analizar</h5>
+            <div class="input-group mb-3">
+                <input type="text" class="form-control" id="txtBoxPath" placeholder="Url">
+                <div class="input-group-append">
+                    <button id="botonUrl" class="btn btn-dark" type="button" onclick="obtenerYReconocer('@Url.Action("ReconocerCaras", "Reconocimiento")', false); ">Analizar</button>
+                </div>
+            </div>
+        </div>
+        <div class="tab-pane fade show" id="local" role="tabpanel" ondragenter="prepararParaDropReco(event);" ondragover="prepararParaDropReco(event);" ondragleave="ajustarDropZoneReco();" ondrop="onImageDropReco('@Url.Action("ReconocerCarasLocal", "Reconocimiento")', event, false);">
+            <br />
+            <div class="row dropZone">
+                <label class="font-weight-bold w-100" id="dzLabel">
+                    Arrastre un archivo o haga click para seleccionar uno<input type="file" id="fileImpt" class="file" onchange="cargarYReconocerImagenLocal('@Url.Action("ReconocerCarasLocal", "Reconocimiento")');">
+                </label>
+            </div>
+        </div>
+        <div class="tab-pane fade show" id="camara" role="tabpanel">
+            <br />
+            <button class="btn btn-dark" type="button" onclick="tabClickReco();onTakePhoto(analizarFotoCamaraWeb);">Tomar Captura</button>
+            <video id="video" autoplay style="display:none;"></video>
+        </div>
+    </div>
+    <br />
+    <div class="row" id="imgDiv">
+        <div class="col-md-7" id="imgSection"></div>
+        <div class="col-md-5" id="imgInfo"></div>
+    </div>
+</div>
+<div class="modal fade" id="modalPersona">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <h1 class="modal-title">Crear Persona</h1>
+                <button type="button" class="close" data-dismiss="modal" onclick="limpiarReco();">&times;</button>
+            </div>
+
+            <!-- Modal body -->
+            <div class="modal-body">
+                <div class="input-group">
+                    <label for="nombre" class="control-label col-sm-4">Legajo</label>
+                    <div class="col-md-8">
+                        <input id="legajo" class="form-control" type="number" min="1" />
+                    </div>
+                </div>
+                <br />
+                <div class="input-group">
+                    <label for="nombre" class="control-label col-sm-4">Nombre</label>
+                    <div class="col-md-8">
+                        <input id="nombre" class="form-control" type="text" />
+                    </div>
+                </div>
+                <br />
+                <div class="input-group">
+                    <label for="nombre" class="control-label col-sm-4">Apellido</label>
+                    <div class="col-md-8">
+                        <input id="apellido" class="form-control" type="text" />
+                    </div>
+                </div>
+                <br />
+                <div class="input-group">
+                    <label for="puesto" class="control-label col-sm-4">Puesto</label>
+                    <div class="col-md-8">
+                        <input id="puesto" class="form-control" type="text" />
+                    </div>
+                </div>
+                <br />
+                <div id="errorCrear" class="alert alert-danger" role="alert" style="display: none;"></div>
+            </div>            
+
+            <!-- Modal footer -->
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="limpiarReco();">Cancelar</button>
+                <button type="button" id="agregar" class="btn btn-primary" onclick="validarPersona('@Url.Action("AgregarPersonaAGrupo", "Reconocimiento")');">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="modalCara">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <h1 class="modal-title">Agregar Cara</h1>
+                <button type="button" class="close" data-dismiss="modal" onclick="limpiarReco();">&times;</button>
+            </div>
+
+            <!-- Modal body -->
+            <div class="modal-body">
+                <div class="input-group">
+                    <label for="legajoEncontrar" class="control-label col-sm-4">Legajo</label>
+                    <div class="col-md-8">
+                        <input id="legajoEncontrar" class="form-control" type="number" min="1" />
+                    </div>
+                </div>
+                <br />
+                <div class="alert alert-warning" role="alert" style="display: block; text-align: center;">
+                    En la foto solo debes aparecer vos, no hay limite por persona.
+                </div>
+                <nav class="nav nav-pills flex-column flex-sm-row navbar-dark bg-dark" role="navigation">
+                    <a class="flex-sm-fill text-sm-center nav-link active" data-toggle="tab" href="#urlModal" onclick="tabClickReco();">Desde una URL</a>
+                    <a class="flex-sm-fill text-sm-center nav-link" data-toggle="tab" href="#localModal" onclick="tabClickReco();">Desde un archivo local</a>
+                    <a class="flex-sm-fill text-sm-center nav-link" data-toggle="tab" href="#camaraModal" onclick="tabClickReco();">Desde la cámara</a>
+                </nav>
+                <div class="tab-content" id="content">
+                    <div class="tab-pane fade show active" id="urlModal" role="tabpanel">
+                        <br />
+                        <h5>Ingrese la Url de la imagen a agregar</h5>
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control" id="txtBoxPathAgregar" placeholder="Url">
+                            <div class="input-group-append">
+                                <button id="botonUrlAgregar" class="btn btn-dark" type="button" onclick="obtenerYReconocer('@Url.Action("AgregarCaraPersona", "Reconocimiento")', true); ">Agregar</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade show" id="localModal" role="tabpanel" ondragenter="prepararParaDropB(event);" ondragover="prepararParaDropB(event);" ondragleave="ajustarDropZoneReco();" ondrop="onImageDropReco('@Url.Action("AgregarCaraPersonaLocal", "Reconocimiento")', event, true);">
+                        <br />
+                        <div class="row dropZone">
+                            <label class="font-weight-bold w-100" id="dzLabelB">
+                                Arrastre un archivo o haga click para seleccionar uno<input type="file" id="fileImptAgregar" class="file" onchange="agregarCaraLocal('@Url.Action("AgregarCaraPersonaLocal", "Reconocimiento")');">
+                            </label>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade show" id="camaraModal" role="tabpanel">
+                        <br />
+                        <p>Tomar captura desde la camara de:</p>
+                        <button class="btn btn-dark" type="button" onclick="agregarCaraDeCamara();">Baufest</button>
+                        <button class="btn btn-dark" type="button" onclick="onTakePhoto(agregarCaraCamaraWeb);">WebCam</button>
+                    </div>
+
+                </div>
+                <br />
+                <div id="errorAgregar" class="alert alert-danger" role="alert" style="display: none;"></div>
+            </div>            
+
+            <!-- Modal footer -->
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="limpiarReco();">Cancelar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalImagenes">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <h1 class="modal-title">Imagenes por persona</h1>
+                <button type="button" class="close" data-dismiss="modal" onclick="limpiarReco();">&times;</button>
+            </div>
+
+            <!-- Modal body -->
+            <div class="modal-body">
+                <div class="input-group">
+                    <label for="legajo" class="control-label col-sm-4">Legajo</label>
+                    <div class="col-md-8">
+                        <div class="input-group mb-3">
+                            <input type="number" class="form-control" id="legajoParaImagenes" min="1">
+                            <div class="input-group-append">
+                                <button id="botonParaImagenes" class="btn btn-dark" type="button" onclick="obtenerImagenes(); ">Buscar</button>
+                            </div>
+                        </div>                        
+                    </div>
+                </div>              
+                <div id="imagenes" class="col-md-12"></div>
+                <div id="errorImagenes" class="alert alert-danger" role="alert" style="display: none;"></div>
+            </div>            
+            
+            <!-- Modal footer -->
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="limpiarReco();">Atras</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="myModal" class="modal">
+    <!-- Modal content -->
+    <div id="myModalContent" class="modal-content">
+        <div id="imag"></div>
+    </div>
+</div>

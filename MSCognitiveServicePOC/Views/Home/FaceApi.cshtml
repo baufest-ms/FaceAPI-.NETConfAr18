@@ -1,0 +1,45 @@
+﻿@{
+    ViewBag.Title = "Face API";
+}
+
+<div class="jumbotron">
+    <div style="display: flex;">
+        <h1>Análisis de Personas</h1>
+    </div>
+    <br />
+    <nav class="nav nav-pills flex-column flex-sm-row navbar-dark bg-dark" role="navigation">
+        <a class="flex-sm-fill text-sm-center nav-link active" data-toggle="tab" href="#url" onclick="tabClick();">Desde una URL</a>
+        <a class="flex-sm-fill text-sm-center nav-link" data-toggle="tab" href="#local" onclick="tabClick();">Desde un archivo local</a>
+        <a class="flex-sm-fill text-sm-center nav-link" data-toggle="tab" href="#camara" onclick="tabClick();">Desde la WebCam</a>
+    </nav>
+    <div class="tab-content" id="content">
+        <div class="tab-pane fade show active" id="url" role="tabpanel">
+            <br />
+            <h5>Ingrese la Url de la imagen a analizar</h5>
+            <div class="input-group mb-3">
+                <input type="text" class="form-control" id="txtBoxPath" placeholder="Url">
+                <div class="input-group-append">
+                    <button id="botonUrl" class="btn btn-dark" type="button" onclick="obtenerYAnalizarImagen('@Url.Action("AnalizarCara", "Home")'); ">Analizar</button>
+                </div>
+            </div>
+        </div>
+        <div class="tab-pane fade show" id="local" role="tabpanel" ondragenter="prepararParaDrop(event);" ondragover="prepararParaDrop(event);" ondragleave="ajustarDropZone();" ondrop="onImageDrop('@Url.Action("AnalizarCaraLocal", "Home")', event);">
+            <br />
+            <div class="row dropZone">
+                <label class="font-weight-bold w-100" id="dzLabel">
+                    Arrastre un archivo o haga click para seleccionar uno<input type="file" id="fileImpt" class="file" onchange="cargarYAnalizarImagenLocal('@Url.Action("AnalizarCaraLocal", "Home")');">
+                </label>
+            </div>
+        </div>
+        <div class="tab-pane fade show" id="camara" role="tabpanel">
+            <br />
+            <button class="btn btn-dark" type="button" onclick="tabClick();onTakePhoto(analizarImagenWebCam);">Tomar Captura</button>
+            <video id="video" autoplay style="display:none;"></video>
+        </div>
+    </div>
+    <br />
+    <div class="row" id="imgDiv">
+        <div class="col-md-8" id="imgSection"></div>
+        <pre class="col-md-4" id="imgInfo"></pre>
+    </div>
+</div>
