@@ -645,13 +645,13 @@ function onTakePhoto(metodo) {
 
             if (typeof InstallTrigger !== 'undefined') { //isFirefox
                 setTimeout(function () {
-                    procesarImagen(metodo, videoStream, videoStream.videoWidth, videoStream.videoHeight);
+                    procesarImagenReco(metodo, videoStream, videoStream.videoWidth, videoStream.videoHeight);
                 }, 2000);
             } else {
                 imageCapture = new ImageCapture(mediaStreamTrack);
                 imageCapture.grabFrame()
                     .then(imageBitmap => {
-                        procesarImagen(metodo, imageBitmap, imageBitmap.width, imageBitmap.height);
+                        procesarImagenReco(metodo, imageBitmap, imageBitmap.width, imageBitmap.height);
                     })
                     .catch(error => alert(error));
             }
@@ -660,7 +660,7 @@ function onTakePhoto(metodo) {
         .catch(error => alert(error));
 };
 
-function procesarImagen(metodo, imagen, ancho, alto) {
+function procesarImagenReco(metodo, imagen, ancho, alto) {
     var canvas = document.createElement('canvas');
     canvas.setAttribute('id', 'canvas');
     canvas.width = ancho;
