@@ -15,7 +15,7 @@ namespace WebApplication1.Controllers
 {
     public abstract class BaseController : Controller
     {
-        protected const string grupoId = "baufest_demo";
+        protected const string grupoId = "";
         protected readonly IRepositorioPersona _repositorioPersona;
         protected readonly ILogger _logger;
         protected readonly IFaceServiceClient faceServiceClient;
