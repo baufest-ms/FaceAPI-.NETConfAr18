@@ -1,4 +1,7 @@
-﻿using System.Net;
+﻿using System;
+using System.IO;
+using System.Net;
+using System.Threading.Tasks;
 using System.Web.Mvc;
 using WebApplication1.Interfaces;
 using ILogger = WebApplication1.Interfaces.ILogger;
@@ -8,7 +11,7 @@ namespace WebApplication1.Controllers
     public class HomeController : BaseController
     {
         public HomeController(IRepositorioPersona repositorioPersona, ILogger logger)
-            :base(repositorioPersona, logger)
+            : base(repositorioPersona, logger)
         {
         }
 
@@ -33,21 +36,54 @@ namespace WebApplication1.Controllers
         }
 
         [HttpPost]
-        public ActionResult AnalizarCara(string path)
+        public async Task<ActionResult> AnalizarCara(string path)
         {
-            return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            try
+            {
+                return Json(await faceServiceClient.DetectAsync(path, returnFaceId: true, returnFaceLandmarks: false, returnFaceAttributes: faceAttributes));
+            }
+            catch (Exception e)
+            {
+                _logger.Log(e);
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest, e.Message);
+            }
         }
 
         [HttpPost]
-        public ActionResult AnalizarCaraLocal()
+        public async Task<ActionResult> AnalizarCaraLocal()
         {
-            return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            try
+            {
+                var fileContent = System.Web.HttpContext.Current.Request.Files["IMG"];
+                if (fileContent != null && fileContent.ContentLength > 0)
+                {
+                    using (var fileStream = fileContent.InputStream)
+                    {
+                        return Json(await faceServiceClient.DetectAsync(fileStream, returnFaceId: true, returnFaceLandmarks: false, returnFaceAttributes: faceAttributes));
+                    }
+                }
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+            catch (Exception e)
+            {
+                _logger.Log(e);
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest, e.Message);
+            }
         }
 
         [HttpPost]
-        public ActionResult AnalizarCaraWebCam(string imagen)
+        public async Task<ActionResult> AnalizarCaraWebCam(string imagen)
         {
-            return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            try
+            {
+                var byteArray = Convert.FromBase64String(imagen);
+                return Json(await faceServiceClient.DetectAsync(new MemoryStream(byteArray), returnFaceId: true, returnFaceLandmarks: false, returnFaceAttributes: faceAttributes));
+            }
+            catch (Exception e)
+            {
+                _logger.Log(e);
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest, e.Message);
+            }
         }
     }
 }

@@ -1,7 +1,14 @@
-﻿using System.Net;
+﻿using Microsoft.ProjectOxford.Face;
+using System;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Text;
+using System.Threading.Tasks;
 using System.Web.Mvc;
 using WebApplication1.Interfaces;
 using WebApplication1.Models;
+using WebApplication1.Utilities;
 using ILogger = WebApplication1.Interfaces.ILogger;
 
 namespace WebApplication1.Controllers
@@ -14,57 +21,153 @@ namespace WebApplication1.Controllers
         }
 
         [HttpPost]
-        public ActionResult ReconocerCaras(string path)
+        public async Task<ActionResult> ReconocerCaras(string path)
+        {
+            try
+            {
+                var response = await faceServiceClient.DetectAsync(path, returnFaceId: true, returnFaceAttributes: new[] { FaceAttributeType.Gender });
+                return Json(await CompararPersonasAsync(response));
+            }
+            catch (Exception e)
+            {
+                _logger.Log(e);
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest, e.Message);
+            }
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> ReconocerCarasLocal()
+        {
+            try
+            {
+                var fileContent = System.Web.HttpContext.Current.Request.Files["IMG"];
+                var response = await faceServiceClient.DetectAsync(fileContent.InputStream, returnFaceId: true, returnFaceAttributes: new[] { FaceAttributeType.Gender });
+                return Json(await CompararPersonasAsync(response));
+            }
+            catch (Exception e)
+            {
+                _logger.Log(e);
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest, e.Message);
+            }
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> ReconocerCarasWebCam(string imagen)
+        {
+            try
+            {
+                var byteArray = Convert.FromBase64String(imagen);
+                var response = await faceServiceClient.DetectAsync(new MemoryStream(byteArray), returnFaceId: true, returnFaceAttributes: new[] { FaceAttributeType.Gender });
+                return Json(await CompararPersonasAsync(response));
+            }
+            catch (Exception e)
+            {
+                _logger.Log(e);
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest, e.Message);
+            }
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> AgregarPersonaAGrupo(Empleado empleado)
+        {
+            try
+            {
+                var data = await faceServiceClient.CreatePersonInPersonGroupAsync(personGroupId: grupoId, name: empleado.Nombre + " " + empleado.Apellido, userData: empleado.Puesto);
+                empleado.FaceId = data.PersonId;
+                await _repositorioPersona.AgregarPersona(empleado);
+
+                return new HttpStatusCodeResult(HttpStatusCode.OK);
+            }
+            catch (Exception e)
+            {
+                _logger.Log(e);
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest, "Error: Por favor intentelo mas tarde.");
+            }
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> AgregarCaraPersona(int legajo, string path)
+        {
+            try
+            {
+                var faceId = await _repositorioPersona.ObtenerFaceIdPorLegajo(legajo);
+                var result = await faceServiceClient.AddPersonFaceInPersonGroupAsync(personGroupId: grupoId, imageUrl: path, personId: faceId);
+
+                await _repositorioPersona.GuardarImagen(legajo, new WebClient().DownloadData(path), result.PersistedFaceId);
+                await faceServiceClient.TrainPersonGroupAsync(grupoId);
+
+                return new HttpStatusCodeResult(HttpStatusCode.OK);
+            }
+            catch (Exception e)
+            {
+                _logger.Log(e);
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest, "Error: Por favor intentelo mas tarde.");
+            }
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> AgregarCaraPersonaLocal(int legajo)
+        {
+            try
+            {
+                var fileContent = System.Web.HttpContext.Current.Request.Files["IMG"];
+                var byteArray = fileContent.InputStream.ObtenerByteArrayDeUnStream();
+
+                var faceId = await _repositorioPersona.ObtenerFaceIdPorLegajo(legajo);
+                var fotoId = await faceServiceClient.AddPersonFaceInPersonGroupAsync(personGroupId: grupoId, imageStream: new MemoryStream(byteArray), personId: faceId);
+
+                await _repositorioPersona.GuardarImagen(legajo, byteArray, fotoId.PersistedFaceId);
+                await faceServiceClient.TrainPersonGroupAsync(grupoId);
+
+                return new HttpStatusCodeResult(HttpStatusCode.OK);
+            }
+            catch (Exception e)
+            {
+                _logger.Log(e);
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest, "Error: Por favor intentelo mas tarde.");
+            }
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> AgregarCaraDeWebCam(int legajo, string imagen)
+        {
+            try
+            {
+                var byteArray = Convert.FromBase64String(imagen);
+
+                var faceId = await _repositorioPersona.ObtenerFaceIdPorLegajo(legajo);
+                var fotoId = await faceServiceClient.AddPersonFaceInPersonGroupAsync(personGroupId: grupoId, imageStream: new MemoryStream(byteArray), personId: faceId);
+
+                await _repositorioPersona.GuardarImagen(legajo, byteArray, fotoId.PersistedFaceId);
+                await faceServiceClient.TrainPersonGroupAsync(grupoId);
+
+                return new HttpStatusCodeResult(HttpStatusCode.OK);
+            }
+            catch (Exception e)
+            {
+                _logger.Log(e);
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest, "Error: Por favor intentelo mas tarde.");
+            }
+        }
+
+        [HttpPost]
+        public ActionResult ObtenerImagenesPorNombre(string nombre)
         {
             return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
         }
 
         [HttpPost]
-        public ActionResult ReconocerCarasLocal()
+        public async Task<ActionResult> ObtenerListadoPersonas()
         {
-            return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-        }
-
-        [HttpPost]
-        public ActionResult ReconocerCarasWebCam(string imagen)
-        {
-            return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-        }
-
-        [HttpPost]
-        public ActionResult AgregarPersonaAGrupo(Empleado empleado)
-        {
-            return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-        }
-
-        [HttpPost]
-        public ActionResult AgregarCaraPersona(int legajo, string path)
-        {
-            return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-        }
-
-        [HttpPost]
-        public ActionResult AgregarCaraPersonaLocal(int legajo)
-        {
-            return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-        }
-
-        [HttpPost]
-        public ActionResult AgregarCaraDeWebCam(int legajo, string imagen)
-        {
-            return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-        }
-
-        [HttpPost]
-        public ActionResult ObtenerImagenesPorNombre(int legajo)
-        {
-            return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-        }
-
-        [HttpPost]
-        public ActionResult ObtenerListadoPersonas()
-        {
-            return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            try
+            {
+                return Json(await _repositorioPersona.ObtenerListadoPersonas());
+            }
+            catch (Exception e)
+            {
+                _logger.Log(e);
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest, e.Message);
+            }
         }
     }
 }
