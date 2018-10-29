@@ -365,7 +365,7 @@ function agregarCaraLocal(urlUpload, droppedFile) {
             type: "Post",
             data: data,
             cache: false,
-            async: false,
+            async: true,
             contentType: false,
             processData: false
         })

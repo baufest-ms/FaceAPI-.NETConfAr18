@@ -37,11 +37,6 @@ namespace WebApplication1.Controllers
             faceServiceClient = new FaceServiceClient(ConfigurationManager.AppSettings["FaceApiSubscriptionKey"], ConfigurationManager.AppSettings["FaceApiEndpoint"]);
         }
 
-        protected List<Persona> ReconocerCarasParaCamara(Stream imageStream)
-        {
-            throw new NotImplementedException();
-        }
-
         protected async Task<List<Persona>> CompararPersonasAsync(Face[] caras)
         {
             var personasFoto = caras.Select(c => new Persona { Id = c.FaceId, Genero = c.FaceAttributes.Gender, Posicion = c.FaceRectangle }).ToList();

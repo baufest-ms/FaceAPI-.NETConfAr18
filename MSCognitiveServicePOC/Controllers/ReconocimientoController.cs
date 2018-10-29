@@ -114,7 +114,7 @@ namespace WebApplication1.Controllers
                 var byteArray = fileContent.InputStream.ObtenerByteArrayDeUnStream();
 
                 var faceId = await _repositorioPersona.ObtenerFaceIdPorLegajo(legajo);
-                var fotoId = await faceServiceClient.AddPersonFaceInPersonGroupAsync(personGroupId: grupoId, imageStream: new MemoryStream(byteArray), personId: faceId);
+                var fotoId = await faceServiceClient.AddPersonFaceInPersonGroupAsync(grupoId, faceId, new MemoryStream(byteArray));
 
                 await _repositorioPersona.GuardarImagen(legajo, byteArray, fotoId.PersistedFaceId);
                 await faceServiceClient.TrainPersonGroupAsync(grupoId);
@@ -151,9 +151,29 @@ namespace WebApplication1.Controllers
         }
 
         [HttpPost]
-        public ActionResult ObtenerImagenesPorNombre(string nombre)
+        public async Task<ActionResult> ObtenerImagenesPorLegajo(int legajo)
         {
-            return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            try
+            {
+                var result = await _repositorioPersona.ObtenerImagenes(legajo);
+                if (result.Count() > 0)
+                {
+                    return new JsonResult()
+                    {
+                        ContentEncoding = Encoding.Default,
+                        ContentType = "application/json",
+                        Data = result.Select(d => Convert.ToBase64String(d)),
+                        MaxJsonLength = int.MaxValue
+                    };
+                }
+
+                return new HttpStatusCodeResult(HttpStatusCode.NotFound, "No se encontraron imagenes.");
+            }
+            catch (Exception e)
+            {
+                _logger.Log(e);
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest, e.Message);
+            }
         }
 
         [HttpPost]
