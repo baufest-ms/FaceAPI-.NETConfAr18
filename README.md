@@ -666,3 +666,4 @@
   - Podes desarrollar un método para que dentro del grupo encuentre personas parecidas.
   - Podes probar con subir una gran grupo de personas, como responde la confidencia de la aplicación.
   - Podes investigar sobre las funcionalidades sobre Computer Vision.
+  - Sobre la branch [FaceAPI-Resuelto](https://github.com/baufest-ms/FaceAPI-.NETConfAr18/tree/FaceAPI-Resuelto) se encuentra una versión resuelta del workshop.
